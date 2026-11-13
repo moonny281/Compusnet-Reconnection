@@ -6,6 +6,7 @@ use crate::services::config::{delete_password, load_password, save_password};
 use crate::state::Monitor;
 use crate::types::{AppConfig, StatusPayload};
 use tauri::{AppHandle, State, Wry};
+use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_notification::NotificationExt;
 
 #[tauri::command]

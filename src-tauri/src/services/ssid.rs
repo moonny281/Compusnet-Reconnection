@@ -51,23 +51,24 @@ impl SsidProvider {
 #[cfg(windows)]
 mod wlan {
     use super::*;
-    use windows::Win32::Foundation::{ERROR_SUCCESS, HANDLE};
+    use windows::Win32::Foundation::HANDLE;
     use windows::Win32::NetworkManagement::WiFi::*;
 
     pub fn wlan_query_ssid() -> AppResult<Option<String>> {
         unsafe {
             let mut negotiated = 0u32;
             let mut handle = HANDLE::default();
-            // WLAN_CLIENT_VERSION_VISTA = 2
+            // WLAN_CLIENT_VERSION_VISTA = 2. WLAN API calls return a plain
+            // u32 status code (WIN32_ERROR value), not the WIN32_ERROR type.
             let status = WlanOpenHandle(2, Some(std::ptr::null()), &mut negotiated, &mut handle);
-            if status != ERROR_SUCCESS {
+            if status != 0 {
                 return Err(AppError::Ssid(format!("WlanOpenHandle failed: {status}")));
             }
             let _guard = HandleGuard(handle);
 
             let mut iface_list: *mut WLAN_INTERFACE_INFO_LIST = std::ptr::null_mut();
             let status = WlanEnumInterfaces(handle, None, &mut iface_list);
-            if status != ERROR_SUCCESS {
+            if status != 0 {
                 return Err(AppError::Ssid(format!(
                     "WlanEnumInterfaces failed: {status}"
                 )));
@@ -95,22 +96,21 @@ mod wlan {
                 &mut conn_data.cast(),
                 None,
             );
-            if status != ERROR_SUCCESS {
+            if status != 0 {
                 return Err(AppError::Ssid(format!(
                     "WlanQueryInterface failed: {status}"
                 )));
             }
             let _conn_guard = ListGuard(conn_data.cast());
 
+            // In windows 0.58 the SSID lives under wlanAssociationAttributes.
             let attrs: &WLAN_CONNECTION_ATTRIBUTES = &*conn_data;
-            if attrs.wlanConnectionMode == wlan_connection_mode_disconnected {
-                return Ok(None);
-            }
-            let len = attrs.dot11Ssid.uSSIDLength as usize;
+            let ssid = &attrs.wlanAssociationAttributes.dot11Ssid;
+            let len = ssid.uSSIDLength as usize;
             if len == 0 {
                 return Ok(None);
             }
-            let ssid_bytes = &attrs.dot11Ssid.ucSSID[..len];
+            let ssid_bytes = &ssid.ucSSID[..len];
             Ok(Some(decode_ssid(ssid_bytes)))
         }
     }

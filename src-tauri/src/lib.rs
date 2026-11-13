@@ -10,6 +10,7 @@ pub mod windows;
 
 use state::Monitor;
 use std::sync::Arc;
+use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

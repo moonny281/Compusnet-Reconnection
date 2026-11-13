@@ -40,6 +40,12 @@ pub enum BodyType {
     Json,
 }
 
+impl Default for BodyType {
+    fn default() -> Self {
+        BodyType::Form
+    }
+}
+
 /// One success criterion for the auth submission.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
