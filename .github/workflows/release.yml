@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      # tauri-action reads the version from src-tauri/tauri.conf.json and
+      # substitutes __VERSION__ in tagName/releaseName, so the Release tag
+      # always matches the app version. It builds installers (msi + NSIS exe)
+      # AND the bare release binary at src-tauri/target/release/*.exe.
+      - uses: tauri-apps/tauri-action@v0
+        id: tauri
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: "CampusNet Reconnector v__VERSION__"
+          releaseBody: |
+            **CampusNet Reconnector v__VERSION__** — 首个公开版本 🎉
+
+            常驻系统托盘的校园网自动重连工具（Windows）。检测到"已连上指定 Wi-Fi 但未通过认证"时，自动向你指定的认证网页提交账号密码完成登录。
+
+            ## 功能
+            - 周期探测（generate_204 类端点）判定：已联网 / 需认证（302 重定向）/ 无网
+            - **SSID 白名单**：仅连接指定校园网 Wi-Fi 时才触发自动登录；宿舍路由器、手机热点绝不误动作
+            - **认证页自定义**：用浏览器 F12 看一次表单字段名即可配置——form/JSON 提交模板、GET/POST/PUT、自定义请求头、多重成功判定（状态码 / 包含 / 不包含 / 正则 / 重新探测）、可选前置请求（如先取 token）
+            - 失败指数退避（10s → 300s 封顶），达到最大次数后停止并通知，不轰击认证服务器
+            - 托盘状态图标（绿/黄/红/灰）、立即检测、暂停/恢复、系统通知
+            - 密码仅存于 **Windows 凭据管理器**，不落配置文件、不进日志
+            - 设置/日志窗口懒创建、关闭即销毁 WebView2，空闲常驻约 15-25MB
+
+            ## 下载
+            - **Installer**：`*.msi` 或 `setup.exe`，向导式安装、可卸载
+            - **Portable**：`campus-net-reconnector_0.0.1_x64_portable.exe`，单文件免安装直接运行（需系统 WebView2 运行时，Win10/11 默认具备）；附 `*.sha256` 校验文件
+
+            ## 快速上手
+            1. 右键托盘图标 → 设置
+            2. 填写校园网 SSID 白名单、认证页 URL 与提交字段模板
+            3. 填写账号密码并保存，完成——掉线后自动重新登录
+
+            ## 已知说明
+            - 校园网认证页多为 HTTP 明文，密码在提交时于校内网可见——这是认证协议本身的限制
+            - 认证服务器使用自签名证书时，可设环境变量 `CNR_INSECURE_TLS=1` 跳过校验
+          releaseDraft: true
+          prerelease: false
+
+      # Attach the portable single-file build (the bare release exe) to the
+      # same draft release. Version comes from tauri.conf.json.
+      - name: Read version
+        id: ver
+        shell: bash
+        run: echo "version=$(node -p "require('./src-tauri/tauri.conf.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Upload portable exe
+        shell: pwsh
+        run: |
+          $version = "${{ steps.ver.outputs.version }}"
+          $src = "src-tauri/target/release/campus-net-reconnector.exe"
+          if (-not (Test-Path $src)) { throw "portable exe not found: $src" }
+          $dst = "campus-net-reconnector_${version}_x64_portable.exe"
+          Copy-Item $src $dst
+          $hash = (Get-FileHash $dst -Algorithm SHA256).Hash.ToLower()
+          "$hash  $dst" | Out-File -Encoding utf8 "$dst.sha256"
+          gh release upload "v$version" $dst "$dst.sha256" --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

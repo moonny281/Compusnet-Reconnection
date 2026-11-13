@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>设置 - CampusNet Reconnector</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header>
+        <h1>设置</h1>
+        <span id="status-chip" class="chip">—</span>
+      </header>
+
+      <section>
+        <h2>基本</h2>
+        <div class="row" style="display:flex; gap:12px;">
+          <div style="flex:1">
+            <label for="interval">检测间隔（秒）</label>
+            <input id="interval" type="number" min="10" max="3600" step="5" />
+          </div>
+          <div style="flex:1">
+            <label for="timeout">探测超时（秒）</label>
+            <input id="timeout" type="number" min="1" max="30" />
+          </div>
+        </div>
+        <div class="row">
+          <label for="endpoints">探测端点 <span class="hint">每行一个 generate_204 地址</span></label>
+          <textarea id="endpoints" rows="3"></textarea>
+        </div>
+        <div class="row">
+          <label for="ssids">校园网 SSID 白名单 <span class="hint">每行一个；仅命中时才自动登录</span></label>
+          <textarea id="ssids" rows="3" placeholder="CampusNet&#10;CampusNet-5G"></textarea>
+        </div>
+        <div class="row checkbox">
+          <label><input id="notify" type="checkbox" /> 登录成功 / 失败时弹系统通知</label>
+        </div>
+        <div class="row checkbox">
+          <label><input id="autostart" type="checkbox" /> 开机自启</label>
+        </div>
+      </section>
+
+      <section>
+        <h2>认证页提交模板</h2>
+        <p class="hint" style="margin:0 0 12px;">
+          认证网页由你指定。用浏览器 F12 → Network 观察一次登录提交，把字段名填到下方；
+          <code>{username}</code> / <code>{password}</code> 会替换为你的账号密码。
+        </p>
+        <div class="row" style="display:flex; gap:12px;">
+          <div style="flex:1">
+            <label for="method">请求方法</label>
+            <select id="method">
+              <option value="POST">POST</option>
+              <option value="GET">GET</option>
+              <option value="PUT">PUT</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <label for="body-type">提交格式</label>
+            <select id="body-type">
+              <option value="form">Form（表单）</option>
+              <option value="json">JSON</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <label for="login-url">认证页 URL</label>
+          <input id="login-url" type="text" placeholder="http://10.10.10.10:8080/login" />
+        </div>
+        <div class="row">
+          <label for="fields">字段 <span class="hint">每行一个，格式：字段名=值</span></label>
+          <textarea id="fields" rows="4">username={username}
+password={password}</textarea>
+        </div>
+        <div class="row">
+          <label for="headers">额外请求头 <span class="hint">每行一个，格式：头名=值</span></label>
+          <textarea id="headers" rows="2"></textarea>
+        </div>
+        <div class="row">
+          <label for="success">成功判定 <span class="hint">每行一条，全部满足才算成功</span></label>
+          <textarea id="success" rows="3" placeholder="reprobe"></textarea>
+          <span class="hint">
+            格式：<code>status2xx</code> / <code>status=200</code> / <code>contains=关键字</code> /
+            <code>notcontains=关键字</code> / <code>regex=正则</code> /
+            <code>reprobe</code>（提交后重新探测 204 确认）。留空默认 2xx。
+          </span>
+        </div>
+        <div class="row checkbox">
+          <label><input id="use-prestep" type="checkbox" /> 登录前先请求一个接口（如取 token）</label>
+        </div>
+        <div id="prestep-box" class="row hidden">
+          <label for="prestep-url">前置请求 URL <span class="hint">响应可用 {step1_body} 引用</span></label>
+          <input id="prestep-url" type="text" />
+          <label for="prestep-regex" style="margin-top:8px">提取正则 <span class="hint">可选，带一个捕获组</span></label>
+          <input id="prestep-regex" type="text" />
+        </div>
+      </section>
+
+      <section>
+        <h2>账号</h2>
+        <div class="row">
+          <label for="username">账号</label>
+          <input id="username" type="text" autocomplete="off" />
+        </div>
+        <div class="row">
+          <label for="password">密码 <span class="hint" id="pw-state"></span></label>
+          <input id="password" type="password" autocomplete="new-password" placeholder="留空则不修改" />
+        </div>
+      </section>
+
+      <section>
+        <h2>重试</h2>
+        <div class="row" style="display:flex; gap:12px;">
+          <div style="flex:1">
+            <label for="max-attempts">最大尝试次数</label>
+            <input id="max-attempts" type="number" min="1" max="20" />
+          </div>
+          <div style="flex:1">
+            <label for="backoff-base">退避起始（秒）</label>
+            <input id="backoff-base" type="number" min="1" max="300" />
+          </div>
+          <div style="flex:1">
+            <label for="backoff-cap">退避上限（秒）</label>
+            <input id="backoff-cap" type="number" min="1" max="1800" />
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <button id="btn-save" class="primary">保存</button>
+        <button id="btn-probe">立即检测</button>
+        <button id="btn-test-notify">测试通知</button>
+        <button id="btn-logs">打开日志</button>
+        <span id="save-msg" class="hint"></span>
+      </footer>
+    </main>
+    <script src="main.js"></script>
+  </body>
+</html>

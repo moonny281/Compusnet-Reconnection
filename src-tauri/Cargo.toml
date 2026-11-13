@@ -1,0 +1,38 @@
+[package]
+name = "campus-net-reconnector"
+version = "0.0.1"
+description = "Campus network auto-reconnect tool: probes connectivity under a whitelisted SSID and re-submits credentials to the user-specified auth page"
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "campus_net_reconnector_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-notification = "2"
+tauri-plugin-autostart = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "net"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "charset"] }
+regex = "1"
+thiserror = "2"
+keyring = { version = "3", features = ["windows-native"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.58", features = [
+  "Win32_Foundation",
+  "Win32_NetworkManagement_WiFi",
+] }
+
+[profile.release]
+opt-level = "s"      # 体积优先
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"

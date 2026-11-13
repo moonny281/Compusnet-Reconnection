@@ -1,0 +1,51 @@
+name: Version bump
+
+# One-click release flow: fill in a version → commit → tag → triggers Release.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "New version (semver, e.g. 0.2.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version
+        run: |
+          V="${{ inputs.version }}"
+          if ! echo "$V" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "::error::Invalid semver: $V"
+            exit 1
+          fi
+          if git rev-parse "v$V" >/dev/null 2>&1; then
+            echo "::error::Tag v$V already exists"
+            exit 1
+          fi
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+
+      - name: Update version fields
+        run: node scripts/bump.mjs "$VERSION"
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Refresh Cargo.lock
+        working-directory: src-tauri
+        run: cargo update --workspace --quiet
+
+      - name: Commit and tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: bump to v$VERSION"
+          git tag "v$VERSION"
+          git push origin HEAD --tags

@@ -1,0 +1,18 @@
+{
+  "name": "campus-net-reconnector",
+  "private": true,
+  "version": "0.0.1",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "build:fe": "esbuild src/main.ts src/logs.ts src/index.html src/logs.html src/style.css --bundle --format=iife --outdir=dist --target=es2021 --loader:.html=copy --loader:.css=copy",
+    "check": "tsc --noEmit",
+    "dev": "pnpm build:fe && tauri dev",
+    "build": "pnpm build:fe && tauri build",
+    "bump": "node scripts/bump.mjs"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.7.0"
+  }
+}
