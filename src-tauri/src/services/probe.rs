@@ -6,11 +6,7 @@ use std::time::Duration;
 
 /// Probe one endpoint. No redirects are followed so a captive portal
 /// shows up as a 30x with a Location header instead of the portal page.
-pub async fn probe_one(
-    client: &reqwest::Client,
-    endpoint: &str,
-    timeout: Duration,
-) -> ProbeResult {
+pub async fn probe_one(client: &reqwest::Client, endpoint: &str, timeout: Duration) -> ProbeResult {
     let resp = match client.get(endpoint).timeout(timeout).send().await {
         Ok(r) => r,
         Err(_) => return ProbeResult::Offline,

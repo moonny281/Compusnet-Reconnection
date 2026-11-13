@@ -6,17 +6,17 @@
 //! give up until the user resets or the network changes.
 
 use crate::error::AppResult;
-use crate::services::config::{ConfigStore, load_password};
-use crate::services::logging::{RingLog, mask_password};
-use crate::services::portal::{SubmitOutcome, TemplateVars, submit};
+use crate::services::config::{load_password, ConfigStore};
+use crate::services::logging::{mask_password, RingLog};
+use crate::services::portal::{submit, SubmitOutcome, TemplateVars};
 use crate::services::probe::probe_all;
 use crate::services::ssid::SsidProvider;
-use crate::types::{AppState, AppConfig, LogEntry, ProbeResult, StatusPayload};
+use crate::types::{AppConfig, AppState, LogEntry, ProbeResult, StatusPayload};
 use serde::Serialize;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter};
-use tokio::sync::{Mutex as AsyncMutex, watch};
+use tokio::sync::{watch, Mutex as AsyncMutex};
 
 /// Events emitted to the frontend.
 #[derive(Debug, Clone, Serialize)]
@@ -120,7 +120,11 @@ impl Monitor {
                 s.next_probe_at = Instant::now(); // probe right away on resume
             }
         });
-        self.log_info(if paused { "已暂停监控" } else { "已恢复监控，立即检测一次" });
+        self.log_info(if paused {
+            "已暂停监控"
+        } else {
+            "已恢复监控，立即检测一次"
+        });
         self.emit_status();
     }
 
@@ -152,9 +156,7 @@ impl Monitor {
 
     fn emit_status(&self) {
         let payload = self.current_status();
-        let _ = self
-            .app
-            .emit("app://status", &AppEvent::Status { payload });
+        let _ = self.app.emit("app://status", &AppEvent::Status { payload });
     }
 
     /// Log through the ring AND push the entry to open log windows.

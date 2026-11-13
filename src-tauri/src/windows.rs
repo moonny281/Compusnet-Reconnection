@@ -5,11 +5,25 @@
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 pub fn open_settings(app: AppHandle) {
-    open_window(&app, "settings", "设置 - CampusNet Reconnector", "index.html", 720.0, 640.0);
+    open_window(
+        &app,
+        "settings",
+        "设置 - CampusNet Reconnector",
+        "index.html",
+        720.0,
+        640.0,
+    );
 }
 
 pub fn open_logs(app: AppHandle) {
-    open_window(&app, "logs", "日志 - CampusNet Reconnector", "logs.html", 640.0, 480.0);
+    open_window(
+        &app,
+        "logs",
+        "日志 - CampusNet Reconnector",
+        "logs.html",
+        640.0,
+        480.0,
+    );
 }
 
 fn open_window(app: &AppHandle, label: &str, title: &str, path: &str, w: f64, h: f64) {

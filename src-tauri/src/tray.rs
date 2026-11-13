@@ -2,9 +2,9 @@
 
 use crate::types::AppState;
 use tauri::{
-    AppHandle, Manager,
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    AppHandle, Manager,
 };
 
 pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
@@ -58,7 +58,11 @@ fn build_menu(app: &AppHandle, paused: bool, state: AppState) -> tauri::Result<M
     let pause = MenuItem::with_id(
         app,
         "pause",
-        if paused { "恢复监控" } else { "暂停监控" },
+        if paused {
+            "恢复监控"
+        } else {
+            "暂停监控"
+        },
         true,
         None::<&str>,
     )?;

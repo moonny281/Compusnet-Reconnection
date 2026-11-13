@@ -46,7 +46,9 @@ impl RingLog {
     }
 
     fn push(&self, level: LogLevel, message: String) {
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default();
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default();
         let entry = LogEntry {
             ts: now.as_millis() as u64,
             level,
@@ -77,7 +79,11 @@ impl RingLog {
 
     fn append_file(&self, line: &str) {
         let Some(path) = &self.file_path else { return };
-        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(path) {
+        if let Ok(mut f) = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(path)
+        {
             use std::io::Write;
             let _ = writeln!(f, "{line}");
         }

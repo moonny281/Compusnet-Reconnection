@@ -59,12 +59,7 @@ mod wlan {
             let mut negotiated = 0u32;
             let mut handle = HANDLE::default();
             // WLAN_CLIENT_VERSION_VISTA = 2
-            let status = WlanOpenHandle(
-                2,
-                Some(std::ptr::null()),
-                &mut negotiated,
-                &mut handle,
-            );
+            let status = WlanOpenHandle(2, Some(std::ptr::null()), &mut negotiated, &mut handle);
             if status != ERROR_SUCCESS {
                 return Err(AppError::Ssid(format!("WlanOpenHandle failed: {status}")));
             }
@@ -200,7 +195,7 @@ mod tests {
     fn cache_reuses_within_ttl() {
         let p = SsidProvider::new(Duration::from_millis(200));
         let _ = p.current_ssid(); // warms the cache (may error on CI w/o WLAN)
-        // Second read must hit the cache and not panic.
+                                  // Second read must hit the cache and not panic.
         let _ = p.current_ssid();
     }
 }

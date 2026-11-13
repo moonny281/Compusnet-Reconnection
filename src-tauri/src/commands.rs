@@ -86,7 +86,11 @@ pub fn probe_now(monitor: State<'_, Monitor>) {
 #[tauri::command]
 pub fn has_password(monitor: State<'_, Monitor>, username: String) -> AppResult<bool> {
     let cfg_user = monitor.config().get().username;
-    let user = if username.is_empty() { cfg_user } else { username };
+    let user = if username.is_empty() {
+        cfg_user
+    } else {
+        username
+    };
     if user.is_empty() {
         return Ok(false); // first run: no account configured yet
     }

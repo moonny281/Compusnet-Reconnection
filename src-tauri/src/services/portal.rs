@@ -227,7 +227,10 @@ mod tests {
         m.insert("username".into(), "u1".into());
         m.insert("password".into(), "p@ss{weird".into());
         m.insert("ip".into(), "10.1.2.3".into());
-        assert_eq!(render_with_map("u={username}&ip={ip}", &m), "u=u1&ip=10.1.2.3");
+        assert_eq!(
+            render_with_map("u={username}&ip={ip}", &m),
+            "u=u1&ip=10.1.2.3"
+        );
         // Unknown placeholder kept verbatim.
         assert_eq!(render_with_map("{unknown}", &m), "{unknown}");
         assert_eq!(render_with_map("{password}", &m), "p@ss{weird");
