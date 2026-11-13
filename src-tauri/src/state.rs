@@ -15,7 +15,7 @@ use crate::types::{AppConfig, AppState, LogEntry, ProbeResult, StatusPayload};
 use serde::Serialize;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tauri::Emitter;
+use tauri::{AppHandle, Emitter};
 use tauri_plugin_notification::NotificationExt;
 use tokio::sync::{watch, Mutex as AsyncMutex};
 

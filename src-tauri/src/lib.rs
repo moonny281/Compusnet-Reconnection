@@ -59,7 +59,7 @@ pub fn run() {
                     let rx = handle.state::<Monitor>().subscribe();
                     let mut last: Option<(bool, types::AppState)> = None;
                     loop {
-                        if rx.changed().is_err() {
+                        if rx.changed().await.is_err() {
                             return; // app shutting down
                         }
                         let (paused, st) = {

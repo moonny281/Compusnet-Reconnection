@@ -86,7 +86,7 @@ mod wlan {
             }
 
             let mut conn_data_size = 0u32;
-            let mut conn_data: *mut WLAN_CONNECTION_ATTRIBUTES = std::ptr::null_mut();
+            let conn_data: *mut WLAN_CONNECTION_ATTRIBUTES = std::ptr::null_mut();
             let status = WlanQueryInterface(
                 handle,
                 &iface.InterfaceGuid,
