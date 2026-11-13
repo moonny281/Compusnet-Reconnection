@@ -56,7 +56,7 @@ pub fn run() {
             {
                 let handle = handle.clone();
                 tauri::async_runtime::spawn(async move {
-                    let rx = handle.state::<Monitor>().subscribe();
+                    let mut rx = handle.state::<Monitor>().subscribe();
                     let mut last: Option<(bool, types::AppState)> = None;
                     loop {
                         if rx.changed().await.is_err() {
