@@ -33,17 +33,12 @@ pub enum AppState {
 }
 
 /// How the request body is encoded when submitting to the auth page.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum BodyType {
+    #[default]
     Form,
     Json,
-}
-
-impl Default for BodyType {
-    fn default() -> Self {
-        BodyType::Form
-    }
 }
 
 /// One success criterion for the auth submission.

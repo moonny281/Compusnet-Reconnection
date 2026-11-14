@@ -75,7 +75,7 @@ pub fn run() {
                 });
             }
 
-            let _ = log.info("应用启动完成（托盘模式）"); // pre-window: no listener yet
+            log.info("应用启动完成（托盘模式）"); // pre-window: no listener yet
             Ok(())
         })
         .build(tauri::generate_context!())

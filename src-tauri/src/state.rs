@@ -112,7 +112,7 @@ impl Monitor {
     }
 
     pub fn set_paused(&self, paused: bool) {
-        let _ = self.state.0.send_modify(|s| {
+        self.state.0.send_modify(|s| {
             s.paused = paused;
             if paused {
                 s.state = AppState::Paused;
@@ -131,7 +131,7 @@ impl Monitor {
 
     /// User pressed "probe now" / reset after GaveUp.
     pub fn request_probe_now(&self) {
-        let _ = self.state.0.send_modify(|s| {
+        self.state.0.send_modify(|s| {
             s.next_probe_at = Instant::now();
             if s.state == AppState::GaveUp {
                 s.state = AppState::Online;
@@ -151,7 +151,7 @@ impl Monitor {
 
     /// Subscribe to state changes. Cheap watcher handle; used by the tray
     /// and the monitor loop to react without polling.
-    pub fn subscribe(&self) -> watch::Receiver<Inner> {
+    pub(crate) fn subscribe(&self) -> watch::Receiver<Inner> {
         self.state.1.clone()
     }
 
@@ -185,7 +185,7 @@ impl Monitor {
     /// Re-read config and reset the timer (called after settings save).
     pub fn reload_config(&self) {
         let cfg = self.cfg.get();
-        let _ = self.state.0.send_modify(|s| {
+        self.state.0.send_modify(|s| {
             s.next_probe_at = Instant::now() + Duration::from_secs(cfg.interval_secs);
         });
         self.log_info(format!("配置已更新，检测间隔 {}s", cfg.interval_secs));
@@ -246,7 +246,7 @@ impl Monitor {
 
     fn schedule_next(&self) {
         let interval = self.cfg.get().interval_secs.max(5);
-        let _ = self.state.0.send_modify(|s| {
+        self.state.0.send_modify(|s| {
             s.next_probe_at = Instant::now() + Duration::from_secs(interval);
         });
     }
@@ -304,7 +304,7 @@ impl Monitor {
     }
 
     fn set_state(&self, state: AppState, fail_count: u32) {
-        let _ = self.state.0.send_modify(|s| {
+        self.state.0.send_modify(|s| {
             if s.paused {
                 // A submit already in flight when the user paused must not
                 // un-grey the tray; resume probes immediately anyway.
