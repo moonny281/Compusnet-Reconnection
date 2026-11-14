@@ -1,7 +1,7 @@
 {
   "name": "campus-net-reconnector",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "build:fe": "esbuild src/main.ts src/logs.ts src/index.html src/logs.html src/style.css --bundle --format=iife --outdir=dist --target=es2021 --loader:.html=copy --loader:.css=copy",

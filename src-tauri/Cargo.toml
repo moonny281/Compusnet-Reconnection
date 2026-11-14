@@ -1,6 +1,6 @@
 [package]
 name = "campus-net-reconnector"
-version = "0.0.1"
+version = "0.0.2"
 description = "Campus network auto-reconnect tool: probes connectivity under a whitelisted SSID and re-submits credentials to the user-specified auth page"
 edition = "2021"
 rust-version = "1.77"
