@@ -88,8 +88,9 @@ mod wlan {
             let mut conn_data_size = 0u32;
             // The API allocates the attributes buffer and writes its pointer
             // through ppdata, so a real address-of is required here —
-            // `&mut conn_data.cast()` would write to a stack temporary and
-            // leave conn_data null (deref → 0xc0000005 at startup).
+            // `&mut conn_data.cast()` would take a mutable reference to the
+            // cast's *temporary* instead of to conn_data, leaving conn_data
+            // null (deref → 0xc0000005 at startup).
             let mut conn_data: *mut WLAN_CONNECTION_ATTRIBUTES = std::ptr::null_mut();
             let status = WlanQueryInterface(
                 handle,
@@ -98,7 +99,8 @@ mod wlan {
                 None,
                 &mut conn_data_size,
                 // &mut *mut c_void, as the FFI expects.
-                &mut conn_data as *mut _ as *mut core::ffi::c_void,
+                &mut conn_data as *mut *mut WLAN_CONNECTION_ATTRIBUTES
+                    as *mut *mut core::ffi::c_void,
                 None,
             );
             if status != 0 {
